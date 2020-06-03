@@ -203,7 +203,6 @@ public class MembershipServiceImpl implements MembershipService {
         try {
             Integer.parseInt(userToAdd);
             createdPerson = new Person(null, userToAdd, null, null, null);
-
         } catch (Exception NumberFormatException) {
             createdPerson = new Person(null, null, userToAdd, null, null);
         }
@@ -347,11 +346,15 @@ public class MembershipServiceImpl implements MembershipService {
         WsDeleteMemberResults deleteMemberResults = grouperFS
                 .makeWsDeleteMemberResults(groupPath, grouperFS.makeWsSubjectLookup(currentUser), membersToDelete);
 
+        List<Person> personsRemoved = new ArrayList<Person>();
+        for (String member : membersToDelete) {
+            personsRemoved.add(new Person(memberAttributeService.getUserAttributes(currentUser, member)));
+        }
         updateLastModified(composite);
         updateLastModified(groupPath);
 
         return new GenericServiceResult(helperService.makeGroupingsServiceResult(deleteMemberResults, action),
-                Arrays.asList("usersToDelete", "membersDeleted"), usersToDelete, membersToDelete);
+                Arrays.asList("usersToDelete", "membersDeleted", "personsRemoved"), usersToDelete, membersToDelete, personsRemoved);
     }
 
     /**

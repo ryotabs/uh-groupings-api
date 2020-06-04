@@ -322,36 +322,39 @@ public class MembershipServiceImpl implements MembershipService {
             List<String> usersToDelete) {
 
         String composite = helperService.parentGroupingPath(groupPath);
+        List<Person> personsToRemove = getPeopleFromMemberIdentifier(usersToDelete, currentUser);
 
         if (!memberAttributeService.isOwner(composite, currentUser) && !memberAttributeService.isAdmin(currentUser)) {
             throw new AccessDeniedException(INSUFFICIENT_PRIVILEGES);
         }
 
-        List<String> membersToDelete;
+        List<String> membersToRemove = new ArrayList<>();
+        for(Person member : personsToRemove) {
+            membersToRemove.add(member.getUsername());
+        }
+
         String action = "deleteGroupMembers; " +
                 "currentUser: " + currentUser + "; " +
                 "groupPath: " + groupPath + "; " +
                 "usersToDelete: " + usersToDelete.toString() + ";";
         logger.info(action);
 
-        List<Person> personsToRemove = getPeopleFromMemberIdentifier(usersToDelete, currentUser);
-
-        if ((membersToDelete = getValidMembers(groupPath, usersToDelete)).isEmpty()) {
+        if ((membersToRemove = getValidMembers(groupPath, usersToDelete)).isEmpty()) {
             return new GenericServiceResult(
                     new GroupingsServiceResult(FAILURE, action + " Error Message: no valid members in usersToDelete"),
                     "usersToDelete", usersToDelete);
         }
 
-        action += " membersToDelete: " + membersToDelete + "; ";
+        action += " membersToRemove: " + membersToRemove + "; ";
         logger.info(action);
 
         WsDeleteMemberResults deleteMemberResults = grouperFS
-                .makeWsDeleteMemberResults(groupPath, grouperFS.makeWsSubjectLookup(currentUser), membersToDelete);
+                .makeWsDeleteMemberResults(groupPath, grouperFS.makeWsSubjectLookup(currentUser), membersToRemove);
         updateLastModified(composite);
         updateLastModified(groupPath);
 
         return new GenericServiceResult(helperService.makeGroupingsServiceResult(deleteMemberResults, action),
-                Arrays.asList("usersToDelete", "membersDeleted", "personsRemoved"), usersToDelete, membersToDelete, personsToRemove);
+                Arrays.asList("usersToDelete", "membersDeleted", "personsRemoved"), usersToDelete, membersToRemove, personsToRemove);
     }
 
     /**

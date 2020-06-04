@@ -334,6 +334,8 @@ public class MembershipServiceImpl implements MembershipService {
                 "usersToDelete: " + usersToDelete.toString() + ";";
         logger.info(action);
 
+        List<Person> personsToRemove = getPeopleFromMemberIdentifier(usersToDelete, currentUser);
+
         if ((membersToDelete = getValidMembers(groupPath, usersToDelete)).isEmpty()) {
             return new GenericServiceResult(
                     new GroupingsServiceResult(FAILURE, action + " Error Message: no valid members in usersToDelete"),
@@ -345,16 +347,26 @@ public class MembershipServiceImpl implements MembershipService {
 
         WsDeleteMemberResults deleteMemberResults = grouperFS
                 .makeWsDeleteMemberResults(groupPath, grouperFS.makeWsSubjectLookup(currentUser), membersToDelete);
-
-        List<Person> personsRemoved = new ArrayList<Person>();
-        for (String member : membersToDelete) {
-            personsRemoved.add(new Person(memberAttributeService.getUserAttributes(currentUser, member)));
-        }
         updateLastModified(composite);
         updateLastModified(groupPath);
 
         return new GenericServiceResult(helperService.makeGroupingsServiceResult(deleteMemberResults, action),
-                Arrays.asList("usersToDelete", "membersDeleted", "personsRemoved"), usersToDelete, membersToDelete, personsRemoved);
+                Arrays.asList("usersToDelete", "membersDeleted", "personsRemoved"), usersToDelete, membersToDelete, personsToRemove);
+    }
+
+    /**
+     * A helper function that creates/returns a list of type Person from an input source that contains either a UH Username
+     * or a UH ID number.
+     * @param inputList - The list of UH usernames or UH ID numbers to create the list from.
+     * @param currentUser - The current user performing the action.
+     * @return A list of type Person from the provided list of member identifiers.
+     */
+    public List<Person> getPeopleFromMemberIdentifier(List<String> inputList, String currentUser) {
+        List<Person> listOfMembers = new ArrayList<>();
+        for(String member : inputList) {
+            listOfMembers.add(new Person(memberAttributeService.getUserAttributes(currentUser, member)));
+        }
+        return listOfMembers;
     }
 
     /**

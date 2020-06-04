@@ -336,10 +336,10 @@ public class MembershipServiceImpl implements MembershipService {
         String action = "deleteGroupMembers; " +
                 "currentUser: " + currentUser + "; " +
                 "groupPath: " + groupPath + "; " +
-                "usersToDelete: " + usersToDelete.toString() + ";";
+                "usersToDelete: " + usersToDelete + ";";
         logger.info(action);
 
-        if ((membersToRemove = getValidMembers(groupPath, usersToDelete)).isEmpty()) {
+        if ((getValidMembers(groupPath, membersToRemove)).isEmpty()) {
             return new GenericServiceResult(
                     new GroupingsServiceResult(FAILURE, action + " Error Message: no valid members in usersToDelete"),
                     "usersToDelete", usersToDelete);
@@ -354,7 +354,7 @@ public class MembershipServiceImpl implements MembershipService {
         updateLastModified(groupPath);
 
         return new GenericServiceResult(helperService.makeGroupingsServiceResult(deleteMemberResults, action),
-                Arrays.asList("usersToDelete", "membersDeleted", "peopleToRemove"), usersToDelete, membersToRemove, peopleToRemove);
+                Arrays.asList("usersToDelete", "membersDeleted", "peopleRemoved"), usersToDelete, membersToRemove, peopleToRemove);
     }
 
     /**

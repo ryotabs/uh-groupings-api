@@ -308,21 +308,21 @@ public class MembershipServiceImpl implements MembershipService {
     }
 
     /**
-     * Remove the valid members contained in usersToDelete from groupPath as currentUser.
+     * Remove the valid members contained in inputListOfMembers from groupPath as currentUser.
      *
      * @param currentUser   Must be an admin and owner of grouping at groupPath.
      * @param groupPath     Full path of group at grouping.
-     * @param usersToDelete List of potential members to be deleted.
-     * @return FAILURE if none of the usersToDelete are valid members of groupPath, otherwise return SUCCESS with
+     * @param inputListOfMembers List of potential members to be deleted.
+     * @return FAILURE if none of the inputListOfMembers are valid members of groupPath, otherwise return SUCCESS with
      * response containing the members which were deleted. Throws AccessDeniedException if currentUser is not
      * an admin and an owner of grouping at groupPath.
      */
     @Override
     public GenericServiceResult removeGroupMembers(String currentUser, String groupPath,
-            List<String> usersToDelete) {
+            List<String> inputListOfMembers) {
 
         String composite = helperService.parentGroupingPath(groupPath);
-        List<Person> peopleToRemove = getPeopleFromMemberIdentifier(usersToDelete, currentUser);
+        List<Person> peopleToRemove = getPeopleFromMemberIdentifier(inputListOfMembers, currentUser);
 
         if (!memberAttributeService.isOwner(composite, currentUser) && !memberAttributeService.isAdmin(currentUser)) {
             throw new AccessDeniedException(INSUFFICIENT_PRIVILEGES);
@@ -336,13 +336,13 @@ public class MembershipServiceImpl implements MembershipService {
         String action = "deleteGroupMembers; " +
                 "currentUser: " + currentUser + "; " +
                 "groupPath: " + groupPath + "; " +
-                "usersToDelete: " + usersToDelete + ";";
+                "inputListOfMembers: " + inputListOfMembers + ";";
         logger.info(action);
 
         if ((getValidMembers(groupPath, membersToRemove)).isEmpty()) {
             return new GenericServiceResult(
-                    new GroupingsServiceResult(FAILURE, action + " Error Message: no valid members in usersToDelete"),
-                    "usersToDelete", usersToDelete);
+                    new GroupingsServiceResult(FAILURE, action + " Error Message: no valid members in inputListOfMembers"),
+                    "inputListOfMembers", inputListOfMembers);
         }
 
         action += " membersToRemove: " + membersToRemove + "; ";
@@ -354,7 +354,7 @@ public class MembershipServiceImpl implements MembershipService {
         updateLastModified(groupPath);
 
         return new GenericServiceResult(helperService.makeGroupingsServiceResult(deleteMemberResults, action),
-                Arrays.asList("usersToDelete", "membersDeleted", "peopleRemoved"), usersToDelete, membersToRemove, peopleToRemove);
+                Arrays.asList("peopleRemoved", "membersDeleted", "inputListOfMembers"), peopleToRemove, membersToRemove, inputListOfMembers);
     }
 
     /**

@@ -322,14 +322,14 @@ public class MembershipServiceImpl implements MembershipService {
             List<String> usersToDelete) {
 
         String composite = helperService.parentGroupingPath(groupPath);
-        List<Person> personsToRemove = getPeopleFromMemberIdentifier(usersToDelete, currentUser);
+        List<Person> peopleToRemove = getPeopleFromMemberIdentifier(usersToDelete, currentUser);
 
         if (!memberAttributeService.isOwner(composite, currentUser) && !memberAttributeService.isAdmin(currentUser)) {
             throw new AccessDeniedException(INSUFFICIENT_PRIVILEGES);
         }
 
         List<String> membersToRemove = new ArrayList<>();
-        for(Person member : personsToRemove) {
+        for(Person member : peopleToRemove) {
             membersToRemove.add(member.getUsername());
         }
 
@@ -354,7 +354,7 @@ public class MembershipServiceImpl implements MembershipService {
         updateLastModified(groupPath);
 
         return new GenericServiceResult(helperService.makeGroupingsServiceResult(deleteMemberResults, action),
-                Arrays.asList("usersToDelete", "membersDeleted", "personsRemoved"), usersToDelete, membersToRemove, personsToRemove);
+                Arrays.asList("usersToDelete", "membersDeleted", "peopleToRemove"), usersToDelete, membersToRemove, peopleToRemove);
     }
 
     /**

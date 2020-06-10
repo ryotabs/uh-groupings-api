@@ -329,7 +329,7 @@ public class MembershipServiceImpl implements MembershipService {
         }
 
         List<String> membersToRemove = new ArrayList<>();
-        for(Person member : peopleToRemove) {
+        for (Person member : peopleToRemove) {
             membersToRemove.add(member.getUsername());
         }
 
